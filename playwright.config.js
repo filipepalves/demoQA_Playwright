@@ -1,6 +1,6 @@
-const { devices } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
-const config = {
+export default defineConfig({
   testDir: './tests',
   timeout: 30 * 1000,
   expect: {
@@ -15,9 +15,6 @@ const config = {
     browserName: 'chromium',
     headless: false,
     screenshot: 'only-on-failure',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
   },
-};
-
-module.exports = config;
-
+});
