@@ -28,7 +28,21 @@ test("Auto Complete test", async ({ page }) => {
   expect(updatedColorNames).toEqual(["Green"]);
   await page.locator(".auto-complete__option").first().click();
   const colorNamesSelected = await page.locator(".auto-complete__multi-value").allInnerTexts();
-  expect(colorNamesSelected).toEqual(["Red", "Green"]);
+  expect(colorNamesSelected).toEqual(colorNames);
 
+  // Clear the Green color name and verify the color name is cleared
+
+  await page.locator(".auto-complete__multi-value").filter({ hasText: "Green" }).first().locator(".auto-complete__multi-value__remove").click();
+  const colorNamesAfterClear = await page.locator(".auto-complete__multi-value").allInnerTexts();
+  expect(colorNamesAfterClear).toEqual(["Red"]);
+
+  // Fill the Single textbox and type "red" and click on it
+
+  await page.locator("div#autoCompleteSingleContainer").click();
+  await page.locator("div#autoCompleteSingleContainer").pressSequentially("red");
+  await expect(page.locator(".auto-complete__option").first()).toBeVisible();
+  await page.locator(".auto-complete__option").first().click();
+  const colorNameSelected = await page.locator(".auto-complete__single-value").first().textContent();
+  expect(colorNameSelected, "Red");
 
 });
