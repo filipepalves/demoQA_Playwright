@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, request } from "@playwright/test";
+import { faker } from "@faker-js/faker";
 
 test("Login test", async ({ page }) => {
-
   // Verify the page title and text on the page
 
   await page.goto("https://demoqa.com/login");
@@ -181,30 +181,40 @@ test("Login test", async ({ page }) => {
   await page.locator("input#lastname").fill("test");
   await page.locator("input#userName").fill("test");
   await page.locator("input#password").fill("test");
-  await page.locator("button#register").click(); 
+  await page.locator("button#register").click();
 
   await expect(page.locator("p#name")).toHaveText(
     "Please verify reCaptcha to register!"
   );
 
+  // Do the register through the api with faker username and generate password
 
-await page.waitForSelector('iframe[title="reCAPTCHA"]');
-const recaptchaFrame = page.frameLocator('iframe[title="reCAPTCHA"]');
-const recaptchaAnchor = recaptchaFrame.locator('#recaptcha-anchor');
-await recaptchaAnchor.waitFor({ timeout: 10000 });
-await recaptchaAnchor.click();
+  const randomUsername = faker.internet.username();
+  const randomPassword = generateStrongPassword();
+  const apiContext = await request.newContext();
+  const response = await apiContext.post("https://demoqa.com/Account/v1/User", {
+    data: {
+      userName: randomUsername,
+      password: randomPassword
+    },
+  });
+  expect(response.status()).toBe(201);
 
-// Estou a ter problemas a lidar com o recaptcha, não consigo
+  // Go to login and perform login with the new user
 
+  await page.locator("button#gotologin").click();
+  await page.locator("input#userName").fill(randomUsername);
+  await page.locator("input#password").fill(randomPassword);
+  await page.locator("button#login").click();
+  await expect(page.locator("#userName-value")).toHaveText(randomUsername);
 
-  await expect (page.locator("#name")).toHaveText("Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.");
-
-  // Click on recaptcha and verify the recaptcha error is not displayed
-
-  await page
-    .locator(".rc-anchor-center-item.rc-anchor-checkbox-holder")
-    .click();
-  await expect(page.locator("p#name")).not.toHaveText(
-    "Please verify reCaptcha to register!"
-  );
 });
+
+function generateStrongPassword(length = 8) {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+}
