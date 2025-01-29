@@ -198,6 +198,8 @@ test("Login test", async ({ page }) => {
       password: randomPassword
     },
   });
+  console.log(`Used username and password were: ${randomUsername} and ${randomPassword}`);
+
   expect(response.status()).toBe(201);
 
   // Go to login and perform login with the new user
@@ -211,10 +213,25 @@ test("Login test", async ({ page }) => {
 });
 
 function generateStrongPassword(length = 8) {
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits = "0123456789";
+  const special = "!@#$%^&*";
+  const all = lower + upper + digits + special;
+
   let password = "";
-  for (let i = 0; i < length; i++) {
-    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  password += lower.charAt(Math.floor(Math.random() * lower.length));
+  password += upper.charAt(Math.floor(Math.random() * upper.length));
+  password += digits.charAt(Math.floor(Math.random() * digits.length));
+  password += special.charAt(Math.floor(Math.random() * special.length));
+
+  for (let i = 4; i < length; i++) {
+    password += all.charAt(Math.floor(Math.random() * all.length));
   }
+
+  // Shuffle the password to ensure random order
+  password = password.split('').sort(() => 0.5 - Math.random()).join('');
+
   return password;
 }
+
