@@ -2,6 +2,7 @@ import { test, expect, request } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 
 test("Login test", async ({ page }) => {
+  
   // Verify the page title and text on the page
 
   await page.goto("https://demoqa.com/login");
