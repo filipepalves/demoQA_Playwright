@@ -91,9 +91,9 @@ test.describe("Forms and Practice Forms Test", () => {
     expect(dateOfBirth).toBe("Date of Birth");
 
     const dateOfBirthTextbox = page.locator("#dateOfBirthInput");
-    const dateOfBirthTextboxText = await dateOfBirthTextbox.getAttribute(
-      "value"
-    );
+    const dateOfBirthTextboxText = await page
+      .locator("input#dateOfBirthInput")
+      .getAttribute("value");
     const today = new Date();
     const formattedDate = today.toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -216,6 +216,42 @@ test.describe("Forms and Practice Forms Test", () => {
     await page.locator('label[for="gender-radio-1"]').click();
     await page.fill("#userNumber", "1234567890");
 
+    // Test the date text box
+
+    await page.locator(".react-datepicker-wrapper").click();
+    await page.selectOption(".react-datepicker__year-select", {
+      label: "1987",
+    });
+    await page.selectOption(".react-datepicker__month-select", {
+      label: "June",
+    });
+    const daySelected = page.locator(
+      ".react-datepicker__day.react-datepicker__day--007.react-datepicker__day--weekend"
+    );
+    await daySelected.click();
+
+    const dateOfBirthValue = await dateOfBirthTextbox.inputValue();
+    expect(dateOfBirthValue).toBe("07 Jun 1987");
+
+    // Test the checkboxes
+    await page.locator('label[for="hobbies-checkbox-1"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-1")).toBe(true);
+
+    await page.locator('label[for="hobbies-checkbox-1"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-1")).toBe(false);
+
+    await page.locator('label[for="hobbies-checkbox-2"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-2")).toBe(true);
+
+    await page.locator('label[for="hobbies-checkbox-2"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-2")).toBe(false);
+
+    await page.locator('label[for="hobbies-checkbox-3"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-3")).toBe(true);
+
+    await page.locator('label[for="hobbies-checkbox-3"]').click();
+    expect(await page.isChecked("#hobbies-checkbox-3")).toBe(false);
+
     await submitButton.click();
     const finalErrorCount = await page
       .locator(
@@ -227,5 +263,16 @@ test.describe("Forms and Practice Forms Test", () => {
     console.log(
       "All the mandatory fields are without border line with red color and without warning icon after filled."
     );
+
+    // Confirm all the inputs are corrected added to the form in the submit form confirmation modal
+
+    const submitFormModal = page.locator("#example-modal-sizes-title-lg");
+    await expect(submitFormModal).toBeVisible();
+    const submitFormModalText = await submitFormModal.innerText();
+    expect(submitFormModalText).toBe("Thanks for submitting the form");
+    const submitFormModalClose = page.locator("#closeLargeModal");
+    await submitFormModalClose.click();
+
+    console.log("Finishing Practice Forms Test.");
   });
 });
